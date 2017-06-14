@@ -35,13 +35,6 @@ struct ArenaAllocationPolicy
     {
 //      std::cout << BOOST_CURRENT_FUNCTION << " " << __FILE__ << ":" << __LINE__ << "\n";
       return reinterpret_cast<T*>(global_arena_allocate(arena,count,sizeof(T)));
-#if(0)
-      // this still doesn't compile, which is a shame as its an elegant solution
-      if(count == 1)
-            return operator new(arena) T;
-
-      return operator new(arena) T[count];
-#endif
     }
 
     static void deallocate(T *ptr, size_t count, Arena & arena)
