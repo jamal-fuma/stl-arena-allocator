@@ -171,71 +171,10 @@ bool operator!=(const ArenaAllocator<T>& lhs, const ArenaAllocator<U>& rhs)
     return !(lhs == rhs);
 }
 
-#include "hexdump.h"
-struct MemoryManager
+template <typename T> ArenaAllocator<T>
+make_allocator(std::shared_ptr<Arena> arena)
 {
-    template <typename CharT  = char,
-              typename TraitT = std::char_traits<CharT>>
-    using ArenaString = std::basic_string<CharT,TraitT,ArenaAllocator<CharT>>;
-
-    template <typename T, template <typename ...Args> class SequenceT>
-    using ArenaSequence = SequenceT<T,ArenaAllocator<T>>;
-
-    // construct an object in memory allocated in an arena and return a shared ptr to it,
-    // the control block and the contents are both allocated at once from the arena
-    MemoryManager(char *base, size_t len)
-        : m_arena{std::make_shared<Arena>(base,len)}
-        , m_hexdumper{[&base,&len](FILE*fp){
-            ::hexdump(fp,reinterpret_cast<const uint8_t *>(base),len,16);
-        }}
-    {
-    }
-
-    void discard(){
-        m_arena->discard();
-    }
-    void hexdump(FILE *fp)
-    {
-        m_hexdumper(fp);
-    }
-
-    ~MemoryManager()
-    {
-    }
-
-
-    template <typename T, class...Args>
-    T &&
-    construct(Args && ...args)
-    {
-        ArenaAllocator<T> alloc = {
-            get_allocator<T>()
-        };
-        T tmp{args...,alloc};
-        return std::move(tmp);
-    }
-
-    template <typename T, class...Args>
-    std::shared_ptr<T>
-    allocate_shared(Args && ...args)
-    {
-        ArenaAllocator<T> alloc = {
-            get_allocator<T>()
-        };
-        return std::shared_ptr<T>::allocate_shared(alloc, std::forward<Args>(args)...);
-    }
-
-
-    template <typename T>
-    ArenaAllocator<T>
-    get_allocator()
-    {
-        return std::move(static_cast< ArenaAllocator<T> >(m_arena));
-    }
-
-    std::shared_ptr<Arena> m_arena;
-    std::function<void(FILE*)> m_hexdumper;
-};
-
+    return std::move(static_cast< ArenaAllocator<T> >(arena));
+}
 
 #endif /* ndef LIB_FUMA_ARENA_ALLOCATOR_HPP */
