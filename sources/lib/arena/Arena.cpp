@@ -6,15 +6,16 @@
 #include <boost/current_function.hpp>
 #include <iostream>
 
-// holds the secret space for arena self allocation
-// this lets us bootstrap the dynamic allocation system
-static char buf[1<<11] = {0};
-
 // the single definition of our static member
-Arena Arena::m_base{buf,sizeof(buf)};
-
+Arena Arena::m_base;
 
 Arena::Arena(char *buf, size_t len)
+{
+//    std::cout << BOOST_CURRENT_FUNCTION << " " << __FILE__ << ":" << __LINE__ << "\n";
+    reset(buf,len);
+}
+
+Arena::reset(char *buf, size_t len)
 {
 //    std::cout << BOOST_CURRENT_FUNCTION << " " << __FILE__ << ":" << __LINE__ << "\n";
     ::arena_init(this,buf,len);

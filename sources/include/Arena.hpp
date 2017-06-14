@@ -11,11 +11,21 @@ class Arena
 : public fuma_arena_t
 {
     public:
-        Arena(char *buf, size_t len);
+        Arena(char *buf=nullptr, size_t len=0);
         ~Arena();
 
         void discard(void);
         void reclaim(void);
+
+        void reset(char *buf,len);
+
+        // this is the global heap
+        // so we can make_shared<arena> and control which arena is in use
+        // clearly changing this willy nilly will spell disaster
+        static Arena & instance()
+        {
+            return Arena::m_base;
+        }
 
         char * strdup_no_throw(const char *str);
         char * strndup_no_throw(const char *str,size_t len);
